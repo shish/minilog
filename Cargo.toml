@@ -1,0 +1,14 @@
+[package]
+name = "minilog"
+version = "0.1.0"
+edition = "2018"
+
+[dependencies]
+chrono = "*"
+clap = "~2.27.0"
+anyhow = "*"
+arrayvec = "*"
+zstd = "*"
+
+[profile.release]
+debug = true

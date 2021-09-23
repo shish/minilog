@@ -1,0 +1,6 @@
+/target
+*.svg
+*.log
+*.mlg
+*.zst
+perf.*
