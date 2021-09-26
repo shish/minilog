@@ -28,6 +28,10 @@ fn main() -> Result<()> {
             (about: "Show DAU from MLG log file")
             (@arg INPUT: +required "Sets the input file to use")
         )
+        (@subcommand mlg2mau =>
+            (about: "Show MAU from MLG log file")
+            (@arg INPUT: +required "Sets the input file to use")
+        )
         (@subcommand mlg2uniq =>
             (about: "Show Unique IPs from MLG log file")
             (@arg INPUT: +required "Sets the input file to use")
@@ -44,6 +48,11 @@ fn main() -> Result<()> {
     if let Some(matches) = matches.subcommand_matches("mlg2dau") {
         let reader = get_input(matches)?;
         mlg2dau(reader)?;
+    }
+
+    if let Some(matches) = matches.subcommand_matches("mlg2mau") {
+        let reader = get_input(matches)?;
+        mlg2mau(reader)?;
     }
 
     if let Some(matches) = matches.subcommand_matches("mlg2uniq") {
@@ -163,6 +172,40 @@ fn mlg2dau<R: io::BufRead>(reader: R) -> Result<()> {
         let dt = Utc.timestamp(k as i64, 0);
         let day = dt.format("%Y-%m-%d").to_string();
         println!("{}: {}", day, v.len());
+    }
+
+    Ok(())
+}
+
+///
+/// Takes a stream of `(timestamp, ipv4)` tuples and prints out a
+/// summary of `YYYY-mm: <number of unique IPs>`. Note that this
+/// uses calendar months, as opposed to 28-day or 30-day windows.
+///
+fn mlg2mau<R: io::BufRead>(reader: R) -> Result<()> {
+    let mut days = BTreeMap::new();
+    let mut months = BTreeMap::new();
+    let stream = MlgStream { reader };
+
+    // Months aren't fixed lengths, so we start by counting days
+    for (dt_bytes, ip_bytes) in stream.into_iter() {
+        let ip = Ipv4Addr::try_from(ip_bytes)?;
+        let timestamp = i32::from_be_bytes(dt_bytes);
+        let day = timestamp - (timestamp % 86400);
+
+        (*days.entry(day).or_insert(HashSet::new())).insert(ip);
+    }
+
+    // Then merge days into months
+    for (k, v) in days {
+        let dt = Utc.timestamp(k as i64, 0);
+        let month = dt.format("%Y-%m").to_string();
+        (*months.entry(month).or_insert(HashSet::new())).extend(v);
+    }
+
+    // Then print months
+    for (k, v) in months {
+        println!("{}: {}", k, v.len());
     }
 
     Ok(())
