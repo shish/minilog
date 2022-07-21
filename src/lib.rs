@@ -37,8 +37,10 @@ impl<R: io::BufRead> Iterator for MlgStream<R> {
 /// ```
 ///
 pub fn log2mlg<R: io::BufRead, W: io::Write>(reader: R, mut writer: W) -> Result<()> {
+    let format: Vec<chrono::format::Item> =
+        chrono::format::StrftimeItems::new("[%d/%b/%Y:%H:%M:%S %z]").collect();
     for line in reader.lines() {
-        match parse_log_line(line?) {
+        match parse_log_line(line?, &format) {
             Ok((date, ip)) => {
                 writer.write_all(&date)?;
                 writer.write_all(&ip)?;
@@ -58,14 +60,20 @@ pub fn log2mlg<R: io::BufRead, W: io::Write>(reader: R, mut writer: W) -> Result
 ///     ([95, 76, 61, 167], [213, 180, 203, 32])
 /// )
 /// ```
-pub fn parse_log_line(line: String) -> Result<([u8; 4], [u8; 4])> {
+pub fn parse_log_line(
+    line: String,
+    format: &Vec<chrono::format::Item>,
+) -> Result<([u8; 4], [u8; 4])> {
     let parts: ArrayVec<_, 6> = line.splitn(6, ' ').collect();
 
     let ipstr = parts.get(0).unwrap();
     let datestr = format!("{} {}", parts.get(3).unwrap(), parts.get(4).unwrap());
 
     let ip: Ipv4Addr = ipstr.parse()?;
-    let date = chrono::DateTime::parse_from_str(&datestr, "[%d/%b/%Y:%H:%M:%S %z]")?;
+    //let date = chrono::DateTime::parse_from_str(&datestr, "[%d/%b/%Y:%H:%M:%S %z]")?;
+    let mut parsed = chrono::format::Parsed::new();
+    chrono::format::parse(&mut parsed, &datestr, format.iter())?;
+    let date = parsed.to_datetime()?;
 
     Ok(((date.timestamp() as i32).to_be_bytes(), ip.octets()))
 }
