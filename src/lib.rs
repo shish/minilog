@@ -1,7 +1,7 @@
 use anyhow::Result;
 use arrayvec::ArrayVec;
 use chrono::{TimeZone, Utc};
-use std::collections::{HashSet, BTreeMap};
+use std::collections::{BTreeMap, HashSet};
 use std::convert::{TryFrom, TryInto};
 use std::io;
 use std::net::Ipv4Addr;
