@@ -5,10 +5,17 @@ edition = "2018"
 
 [dependencies]
 chrono = "*"
-clap = "~2.27.0"
+clap = "^2.27.0"
 anyhow = "*"
 arrayvec = "*"
 zstd = "*"
 
 [profile.release]
 debug = true
+
+[dev-dependencies]
+criterion = "0.3"
+
+[[bench]]
+name = "log2mlg"
+harness = false
