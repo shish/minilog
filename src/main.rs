@@ -17,21 +17,24 @@ fn main() -> Result<()> {
         // (@arg debug: -d ... "Sets the level of debugging information")
         (@subcommand log2mlg =>
             (about: "Turn apache logs into binary (timestamp, ip) tuples")
-            (@arg INPUT: +required "Sets the input file to use")
-            (@arg OUTPUT: +required "Sets the output file to use")
+            (@arg INPUT: "Sets the input file to use")
+            (@arg OUTPUT: "Sets the output file to use")
             // (@arg verbose: -v --verbose "Print test information verbosely")
         )
         (@subcommand mlg2dau =>
             (about: "Show DAU from MLG log file")
-            (@arg INPUT: +required "Sets the input file to use")
+            (@arg INPUT: "Sets the input file to use")
+            (@arg OUTPUT: "Sets the output file to use")
         )
         (@subcommand mlg2mau =>
             (about: "Show MAU from MLG log file")
-            (@arg INPUT: +required "Sets the input file to use")
+            (@arg INPUT: "Sets the input file to use")
+            (@arg OUTPUT: "Sets the output file to use")
         )
         (@subcommand mlg2uniq =>
             (about: "Show Unique IPs from MLG log file")
-            (@arg INPUT: +required "Sets the input file to use")
+            (@arg INPUT: "Sets the input file to use")
+            (@arg OUTPUT: "Sets the output file to use")
         )
     )
     .get_matches();
