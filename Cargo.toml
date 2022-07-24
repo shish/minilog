@@ -9,7 +9,7 @@ clap = "^2.27.0"
 anyhow = "*"
 arrayvec = "*"
 zstd = "*"
-fnv = "1.0.3"
+nohash-hasher = "*"
 
 [dev-dependencies]
 criterion = "0.3"
