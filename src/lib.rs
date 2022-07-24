@@ -1,7 +1,8 @@
 use anyhow::Result;
 use arrayvec::ArrayVec;
 use chrono::{TimeZone, Utc};
-use std::collections::{BTreeMap, HashSet};
+use fnv::FnvHashSet;
+use std::collections::BTreeMap;
 use std::convert::{TryFrom, TryInto};
 use std::io;
 use std::net::Ipv4Addr;
@@ -91,7 +92,7 @@ pub fn mlg2dau<R: io::BufRead, W: io::Write>(reader: R, mut writer: W) -> Result
         let timestamp = i32::from_be_bytes(dt_bytes);
         let day = timestamp - (timestamp % 86400);
 
-        (*days.entry(day).or_insert(HashSet::new())).insert(ip);
+        (*days.entry(day).or_insert(FnvHashSet::default())).insert(ip);
     }
 
     for (k, v) in days {
@@ -119,14 +120,14 @@ pub fn mlg2mau<R: io::BufRead, W: io::Write>(reader: R, mut writer: W) -> Result
         let timestamp = i32::from_be_bytes(dt_bytes);
         let day = timestamp - (timestamp % 86400);
 
-        (*days.entry(day).or_insert(HashSet::new())).insert(ip);
+        (*days.entry(day).or_insert(FnvHashSet::default())).insert(ip);
     }
 
     // Then merge days into months
     for (k, v) in days {
         let dt = Utc.timestamp(k as i64, 0);
         let month = dt.format("%Y-%m").to_string();
-        (*months.entry(month).or_insert(HashSet::new())).extend(v);
+        (*months.entry(month).or_insert(FnvHashSet::default())).extend(v);
     }
 
     // Then print months
@@ -142,7 +143,7 @@ pub fn mlg2mau<R: io::BufRead, W: io::Write>(reader: R, mut writer: W) -> Result
 /// the unique IPs
 ///
 pub fn mlg2uniq<R: io::BufRead, W: io::Write>(reader: R, mut writer: W) -> Result<()> {
-    let mut ips = HashSet::new();
+    let mut ips = FnvHashSet::default();
     let stream = MlgStream { reader };
 
     for (_dt_bytes, ip_bytes) in stream.into_iter() {
