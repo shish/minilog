@@ -88,11 +88,10 @@ pub fn mlg2dau<R: io::BufRead, W: io::Write>(reader: R, mut writer: W) -> Result
     let stream = MlgStream { reader };
 
     for (dt_bytes, ip_bytes) in stream.into_iter() {
-        let ip = Ipv4Addr::try_from(ip_bytes)?;
         let timestamp = i32::from_be_bytes(dt_bytes);
         let day = timestamp - (timestamp % 86400);
 
-        (*days.entry(day).or_insert(FnvHashSet::default())).insert(ip);
+        (*days.entry(day).or_insert(FnvHashSet::default())).insert(ip_bytes);
     }
 
     for (k, v) in days {
@@ -116,11 +115,10 @@ pub fn mlg2mau<R: io::BufRead, W: io::Write>(reader: R, mut writer: W) -> Result
 
     // Months aren't fixed lengths, so we start by counting days
     for (dt_bytes, ip_bytes) in stream.into_iter() {
-        let ip = Ipv4Addr::try_from(ip_bytes)?;
         let timestamp = i32::from_be_bytes(dt_bytes);
         let day = timestamp - (timestamp % 86400);
 
-        (*days.entry(day).or_insert(FnvHashSet::default())).insert(ip);
+        (*days.entry(day).or_insert(FnvHashSet::default())).insert(ip_bytes);
     }
 
     // Then merge days into months
@@ -146,13 +144,12 @@ pub fn mlg2uniq<R: io::BufRead, W: io::Write>(reader: R, mut writer: W) -> Resul
     let mut ips = FnvHashSet::default();
     let stream = MlgStream { reader };
 
-    for (_dt_bytes, ip_bytes) in stream.into_iter() {
-        let ip = Ipv4Addr::try_from(ip_bytes)?;
-        ips.insert(ip);
+    for (_, ip_bytes) in stream.into_iter() {
+        ips.insert(ip_bytes);
     }
 
     for ip in ips {
-        writeln!(writer, "{}", ip)?;
+        writeln!(writer, "{}", Ipv4Addr::try_from(ip)?)?;
     }
 
     Ok(())
