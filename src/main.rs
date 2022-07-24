@@ -44,17 +44,20 @@ fn main() -> Result<()> {
 
     if let Some(matches) = matches.subcommand_matches("mlg2dau") {
         let reader = get_input(matches)?;
-        minilog::mlg2dau(reader)?;
+        let writer = get_output(matches)?;
+        minilog::mlg2dau(reader, writer)?;
     }
 
     if let Some(matches) = matches.subcommand_matches("mlg2mau") {
         let reader = get_input(matches)?;
-        minilog::mlg2mau(reader)?;
+        let writer = get_output(matches)?;
+        minilog::mlg2mau(reader, writer)?;
     }
 
     if let Some(matches) = matches.subcommand_matches("mlg2uniq") {
         let reader = get_input(matches)?;
-        minilog::mlg2uniq(reader)?;
+        let writer = get_output(matches)?;
+        minilog::mlg2uniq(reader, writer)?;
     }
 
     Ok(())

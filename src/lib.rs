@@ -82,7 +82,7 @@ pub fn parse_log_line(
 /// Takes a stream of `(timestamp, ipv4)` tuples and prints out a
 /// summary of `YYYY-mm-dd: <number of unique IPs>`
 ///
-pub fn mlg2dau<R: io::BufRead>(reader: R) -> Result<()> {
+pub fn mlg2dau<R: io::BufRead, W: io::Write>(reader: R, mut writer: W) -> Result<()> {
     let mut days = BTreeMap::new();
     let stream = MlgStream { reader };
 
@@ -97,7 +97,7 @@ pub fn mlg2dau<R: io::BufRead>(reader: R) -> Result<()> {
     for (k, v) in days {
         let dt = Utc.timestamp(k as i64, 0);
         let day = dt.format("%Y-%m-%d").to_string();
-        println!("{}: {}", day, v.len());
+        writeln!(writer, "{}: {}", day, v.len())?;
     }
 
     Ok(())
@@ -108,7 +108,7 @@ pub fn mlg2dau<R: io::BufRead>(reader: R) -> Result<()> {
 /// summary of `YYYY-mm: <number of unique IPs>`. Note that this
 /// uses calendar months, as opposed to 28-day or 30-day windows.
 ///
-pub fn mlg2mau<R: io::BufRead>(reader: R) -> Result<()> {
+pub fn mlg2mau<R: io::BufRead, W: io::Write>(reader: R, mut writer: W) -> Result<()> {
     let mut days = BTreeMap::new();
     let mut months = BTreeMap::new();
     let stream = MlgStream { reader };
@@ -131,7 +131,7 @@ pub fn mlg2mau<R: io::BufRead>(reader: R) -> Result<()> {
 
     // Then print months
     for (k, v) in months {
-        println!("{}: {}", k, v.len());
+        writeln!(writer, "{}: {}", k, v.len())?;
     }
 
     Ok(())
@@ -141,7 +141,7 @@ pub fn mlg2mau<R: io::BufRead>(reader: R) -> Result<()> {
 /// Takes a stream of `(timestamp, ipv4)` tuples and prints out all
 /// the unique IPs
 ///
-pub fn mlg2uniq<R: io::BufRead>(reader: R) -> Result<()> {
+pub fn mlg2uniq<R: io::BufRead, W: io::Write>(reader: R, mut writer: W) -> Result<()> {
     let mut ips = HashSet::new();
     let stream = MlgStream { reader };
 
@@ -151,7 +151,7 @@ pub fn mlg2uniq<R: io::BufRead>(reader: R) -> Result<()> {
     }
 
     for ip in ips {
-        println!("{}", ip);
+        writeln!(writer, "{}", ip)?;
     }
 
     Ok(())

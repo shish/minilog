@@ -10,13 +10,14 @@ anyhow = "*"
 arrayvec = "*"
 zstd = "*"
 
+[dev-dependencies]
+criterion = "0.3"
+rand = {version="*", features=["small_rng"]}
+
 [profile.release]
 debug = true
 lto = true
 
-[dev-dependencies]
-criterion = "0.3"
-
 [[bench]]
-name = "log2mlg"
+name = "lib"
 harness = false
