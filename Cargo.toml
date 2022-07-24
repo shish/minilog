@@ -12,6 +12,7 @@ zstd = "*"
 
 [profile.release]
 debug = true
+lto = true
 
 [dev-dependencies]
 criterion = "0.3"
