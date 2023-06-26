@@ -1,12 +1,12 @@
 use anyhow::Result;
 use arrayvec::ArrayVec;
+use chrono::LocalResult::Single;
 use chrono::{TimeZone, Utc};
+use nohash_hasher::IntSet;
 use std::collections::BTreeMap;
 use std::convert::{TryFrom, TryInto};
 use std::io;
 use std::net::Ipv4Addr;
-use nohash_hasher::IntSet;
-
 
 struct MlgStream<R: io::BufRead> {
     reader: R,
@@ -64,11 +64,11 @@ pub fn log2mlg<R: io::BufRead, W: io::Write>(reader: R, mut writer: W) -> Result
 /// ```
 pub fn parse_log_line(
     line: String,
-    format: &Vec<chrono::format::Item>,
+    format: &[chrono::format::Item],
 ) -> Result<([u8; 4], [u8; 4])> {
     let parts: ArrayVec<_, 6> = line.splitn(6, ' ').collect();
 
-    let ipstr = parts.get(0).unwrap();
+    let ipstr = parts.first().unwrap();
     let datestr = format!("{} {}", parts.get(3).unwrap(), parts.get(4).unwrap());
 
     let ip: Ipv4Addr = ipstr.parse()?;
@@ -96,9 +96,10 @@ pub fn mlg2dau<R: io::BufRead, W: io::Write>(reader: R, mut writer: W) -> Result
     }
 
     for (k, v) in days {
-        let dt = Utc.timestamp(k as i64, 0);
-        let day = dt.format("%Y-%m-%d").to_string();
-        writeln!(writer, "{}: {}", day, v.len())?;
+        if let Single(dt) = Utc.timestamp_opt(k as i64, 0) {
+            let day = dt.format("%Y-%m-%d").to_string();
+            writeln!(writer, "{}: {}", day, v.len())?;
+        }
     }
 
     Ok(())
@@ -124,9 +125,10 @@ pub fn mlg2mau<R: io::BufRead, W: io::Write>(reader: R, mut writer: W) -> Result
 
     // Then merge days into months
     for (k, v) in days {
-        let dt = Utc.timestamp(k as i64, 0);
-        let month = dt.format("%Y-%m").to_string();
-        (*months.entry(month).or_insert(IntSet::default())).extend(v);
+        if let Single(dt) = Utc.timestamp_opt(k as i64, 0) {
+            let month = dt.format("%Y-%m").to_string();
+            (*months.entry(month).or_insert(IntSet::default())).extend(v);
+        }
     }
 
     // Then print months

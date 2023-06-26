@@ -7,8 +7,6 @@ use zstd::stream::write::Encoder;
 #[macro_use]
 extern crate clap;
 
-pub mod lib;
-
 fn main() -> Result<()> {
     let matches = clap_app!(myapp =>
         (version: "1.0")

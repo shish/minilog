@@ -1,15 +1,15 @@
 [package]
 name = "minilog"
 version = "0.1.0"
-edition = "2018"
+edition = "2021"
 
 [dependencies]
-chrono = "*"
-clap = "^2.27.0"
-anyhow = "*"
-arrayvec = "*"
-zstd = "*"
-nohash-hasher = "*"
+chrono = "^0.4"
+clap = "^2.27"
+anyhow = "^1.0"
+arrayvec = "^0.7"
+zstd = "^0.12"
+nohash-hasher = "^0.2"
 
 [dev-dependencies]
 criterion = "0.3"
