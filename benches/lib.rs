@@ -17,7 +17,7 @@ fn all(c: &mut Criterion) {
     let mut ts: u32 = 0;
     for n in 0..1_000_000 {
         let tsb = ts.to_be_bytes();
-        buf[n * 8 + 0] = tsb[0];
+        buf[n * 8] = tsb[0];
         buf[n * 8 + 1] = tsb[1];
         buf[n * 8 + 2] = tsb[2];
         buf[n * 8 + 3] = tsb[3];

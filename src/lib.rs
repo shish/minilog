@@ -4,7 +4,7 @@ use chrono::LocalResult::Single;
 use chrono::{TimeZone, Utc};
 use nohash_hasher::IntSet;
 use std::collections::BTreeMap;
-use std::convert::{TryFrom, TryInto};
+
 use std::io;
 use std::net::Ipv4Addr;
 
@@ -19,8 +19,8 @@ impl<R: io::BufRead> Iterator for MlgStream<R> {
 
         match self.reader.read_exact(&mut record) {
             Ok(_) => {
-                let dt_bytes: [u8; 4] = record[0..4].try_into().unwrap();
-                let ip_bytes: [u8; 4] = record[4..8].try_into().unwrap();
+                let dt_bytes = [record[0], record[1], record[2], record[3]];
+                let ip_bytes = [record[4], record[5], record[6], record[7]];
                 Some((dt_bytes, ip_bytes))
             }
             Err(_) => None,
@@ -62,14 +62,21 @@ pub fn log2mlg<R: io::BufRead, W: io::Write>(reader: R, mut writer: W) -> Result
 ///     ([95, 76, 61, 167], [213, 180, 203, 32])
 /// )
 /// ```
-pub fn parse_log_line(
-    line: String,
-    format: &[chrono::format::Item],
-) -> Result<([u8; 4], [u8; 4])> {
+pub fn parse_log_line(line: String, format: &[chrono::format::Item]) -> Result<([u8; 4], [u8; 4])> {
     let parts: ArrayVec<_, 6> = line.splitn(6, ' ').collect();
 
-    let ipstr = parts.first().unwrap();
-    let datestr = format!("{} {}", parts.get(3).unwrap(), parts.get(4).unwrap());
+    let ipstr = parts
+        .first()
+        .ok_or_else(|| anyhow::anyhow!("Missing IP address"))?;
+    let datestr = format!(
+        "{} {}",
+        parts
+            .get(3)
+            .ok_or_else(|| anyhow::anyhow!("Missing date part"))?,
+        parts
+            .get(4)
+            .ok_or_else(|| anyhow::anyhow!("Missing timezone part"))?
+    );
 
     let ip: Ipv4Addr = ipstr.parse()?;
     //let date = chrono::DateTime::parse_from_str(&datestr, "[%d/%b/%Y:%H:%M:%S %z]")?;
@@ -152,7 +159,7 @@ pub fn mlg2uniq<R: io::BufRead, W: io::Write>(reader: R, mut writer: W) -> Resul
     }
 
     for ip in ips {
-        writeln!(writer, "{}", Ipv4Addr::try_from(ip)?)?;
+        writeln!(writer, "{}", Ipv4Addr::from(ip))?;
     }
 
     Ok(())

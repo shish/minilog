@@ -22,3 +22,8 @@ lto = true
 [[bench]]
 name = "lib"
 harness = false
+
+[lints.clippy]
+dbg_macro = "deny"
+unwrap_used = "deny"
+expect_used = "deny"

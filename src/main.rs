@@ -69,8 +69,7 @@ fn get_input(matches: &clap::ArgMatches) -> Result<io::BufReader<Box<dyn io::Rea
     let reader: Box<dyn io::Read> = match filename {
         Some("-") | None => Box::new(io::stdin()),
         Some(filename) => {
-            let mut reader: Box<dyn io::Read> =
-                Box::new(File::open(filename).expect(&(format!("Error opening {}", filename))));
+            let mut reader: Box<dyn io::Read> = Box::new(File::open(filename)?);
             if filename.ends_with(".zst") {
                 reader = Box::new(Decoder::new(reader)?)
             }
@@ -85,8 +84,7 @@ fn get_output(matches: &clap::ArgMatches) -> Result<io::BufWriter<Box<dyn io::Wr
     let writer: Box<dyn io::Write> = match filename {
         Some("-") | None => Box::new(io::stdout()),
         Some(filename) => {
-            let mut writer: Box<dyn io::Write> =
-                Box::new(File::create(filename).expect(&(format!("Error opening {}", filename))));
+            let mut writer: Box<dyn io::Write> = Box::new(File::create(filename)?);
             if filename.ends_with(".zst") {
                 writer = Box::new(Encoder::new(writer, 0)?)
             }
